@@ -26,7 +26,6 @@ export const clusterAdapter: CatalogProvisionAdapter<
   getReviewSections: () => [],
   wizardTitleKey: 'catalogProvision.cluster.wizardTitle',
   wizardDescriptionKey: 'catalogProvision.cluster.wizardDescription',
-  createButtonLabelKey: 'catalogProvision.cluster.createButton',
   breadcrumbCreateLabelKey: 'catalogProvision.cluster.breadcrumbCreate',
   ariaLabelKey: 'catalogProvision.cluster.ariaLabel',
 };

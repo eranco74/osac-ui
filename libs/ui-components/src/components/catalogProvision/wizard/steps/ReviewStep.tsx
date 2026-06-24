@@ -42,7 +42,7 @@ export const ReviewStep = ({
         </Title>
         <SubtleContent component="p">
           {t('catalogProvision.steps.review.intro', {
-            action: t(adapter.createButtonLabelKey).toLowerCase(),
+            action: t('catalogProvision.actions.create').toLowerCase(),
           })}
         </SubtleContent>
       </StackItem>

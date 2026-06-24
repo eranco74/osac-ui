@@ -62,13 +62,10 @@
 
 .tenant-vm-catalog-template-card-wrap .pf-v6-c-card {
   height: 100%;
-  border: 1px solid var(--pf-t--global--border--color--default);
-  border-radius: var(--pf-t--global--border--radius--medium);
 }
 
-.tenant-vm-catalog-template-card-wrap:hover .pf-v6-c-card {
+.tenant-vm-catalog-template-card-wrap:hover .tenant-vm-template-card.pf-v6-c-card {
   box-shadow: var(--pf-t--global--box-shadow--md);
-  border-color: var(--pf-t--global--border--color--default);
 }
 
 .tenant-vm-catalog-template-card-wrap:focus-visible {

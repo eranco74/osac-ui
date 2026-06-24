@@ -143,7 +143,7 @@ describe('CatalogProvisionWizard', () => {
     await selectNetworkingPickers(user);
     await clickWizardNext(user);
 
-    await user.click(screen.getByRole('button', { name: 'Create virtual machine' }));
+    await user.click(screen.getByRole('button', { name: 'Create' }));
 
     await waitFor(() => {
       expect(onProvision).toHaveBeenCalledTimes(1);
@@ -295,7 +295,7 @@ describe('CatalogProvisionWizard', () => {
 
     await advanceToReviewStep(user);
 
-    await user.click(screen.getByRole('button', { name: 'Create virtual machine' }));
+    await user.click(screen.getByRole('button', { name: 'Create' }));
 
     await waitFor(() => {
       expect(onProvision).toHaveBeenCalledTimes(1);
@@ -313,7 +313,7 @@ describe('CatalogProvisionWizard', () => {
 
     await advanceToReviewStep(user);
 
-    await user.click(screen.getByRole('button', { name: 'Create virtual machine' }));
+    await user.click(screen.getByRole('button', { name: 'Create' }));
 
     await waitFor(() => {
       expect(screen.getByText('Provisioning failed. Please try again.')).toBeInTheDocument();

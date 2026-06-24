@@ -61,6 +61,7 @@ export const CatalogItemCard = ({
     <Card
       id={id}
       ouiaId={ouiaId}
+      isSelectable={Boolean(selection)}
       isClickable={Boolean(selection || onOpenDetails)}
       isSelected={selection?.selected}
       isFullHeight

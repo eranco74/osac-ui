@@ -5,23 +5,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
-  Breadcrumb,
-  BreadcrumbItem,
   Button,
   Flex,
   Modal,
   ModalBody,
   ModalFooter,
   ModalHeader,
+  PageSection,
+  PageSectionTypes,
   Stack,
   StackItem,
-  Title,
   Wizard,
   WizardFooterWrapper,
   WizardStep,
   useWizardContext,
 } from '@patternfly/react-core';
-import { Formik, type FormikErrors, type FormikProps } from 'formik';
+import { FormikProvider, useFormik, type FormikErrors, type FormikProps } from 'formik';
 
 import type { ComputeInstanceCatalogItem } from '@osac/types';
 
@@ -39,40 +38,17 @@ import type { BuildComputeInstanceCreateBodyInput } from '../../api/v1/compute-i
 const hasWizardUnsavedProgress = (values: { catalogItemId?: string }): boolean =>
   Boolean(values.catalogItemId?.trim());
 
-interface CatalogProvisionWizardHeaderProps {
-  breadcrumbParentLabel: string;
-  wizardTitle: string;
-  onRequestClose: () => void;
+export type CatalogProvisionWizardCloseHandler = {
+  requestClose: () => void;
   pending: boolean;
-}
-
-const CatalogProvisionWizardHeader = ({
-  breadcrumbParentLabel,
-  wizardTitle,
-  onRequestClose,
-  pending,
-}: CatalogProvisionWizardHeaderProps) => (
-  <Stack hasGutter>
-    <Breadcrumb>
-      <BreadcrumbItem>
-        <Button variant="link" isInline onClick={onRequestClose} isDisabled={pending}>
-          {breadcrumbParentLabel}
-        </Button>
-      </BreadcrumbItem>
-      <BreadcrumbItem isActive>{wizardTitle}</BreadcrumbItem>
-    </Breadcrumb>
-    <Title headingLevel="h2" size="xl">
-      {wizardTitle}
-    </Title>
-  </Stack>
-);
+};
 
 interface Props {
   kind?: CatalogProvisionKind;
-  breadcrumbParentLabel: string;
   initialCatalogItemId?: string;
   onProvision: (payload: BuildComputeInstanceCreateBodyInput) => void | Promise<void>;
   onClosed?: () => void;
+  onCloseHandlerChange?: (handler: CatalogProvisionWizardCloseHandler) => void;
 }
 
 interface WizardFooterProps {
@@ -243,7 +219,7 @@ const CatalogProvisionWizardFooter = ({
         isDisabled={pending}
         isLoading={pending}
       >
-        {isReview ? t(adapter.createButtonLabelKey) : t('catalogProvision.actions.next')}
+        {isReview ? t('catalogProvision.actions.create') : t('catalogProvision.actions.next')}
       </Button>
       <Button variant="link" onClick={requestClose} isDisabled={pending}>
         {t('catalogProvision.actions.cancel')}
@@ -321,11 +297,11 @@ interface InnerProps extends Props {
 
 const CatalogProvisionWizardInner = ({
   adapter,
-  breadcrumbParentLabel,
   initialCatalogItemId,
   initialValues,
   onProvision,
   onClosed,
+  onCloseHandlerChange,
 }: InnerProps) => {
   const { t } = useTranslation();
   const orderedSteps = useMemo(() => getWizardOrderedSteps(), []);
@@ -352,30 +328,33 @@ const CatalogProvisionWizardInner = ({
     [onClosed, resetLocal],
   );
 
+  const formik = useFormik<ComputeInstanceWizardValues>({
+    initialValues,
+    onSubmit: () => undefined,
+  });
+
   return (
-    <Formik initialValues={initialValues} onSubmit={() => undefined}>
-      {(formik) => (
-        <CatalogProvisionWizardForm
-          adapter={adapter}
-          formik={formik}
-          breadcrumbParentLabel={breadcrumbParentLabel}
-          initialCatalogItemId={initialCatalogItemId}
-          orderedSteps={orderedSteps}
-          wizardResetKey={wizardResetKey}
-          provisionError={provisionError}
-          setProvisionError={setProvisionError}
-          validationAlert={validationAlert}
-          setValidationAlert={setValidationAlert}
-          pending={pending}
-          setPending={setPending}
-          showCancelConfirm={showCancelConfirm}
-          setShowCancelConfirm={setShowCancelConfirm}
-          onProvision={onProvision}
-          close={close}
-          t={t}
-        />
-      )}
-    </Formik>
+    <FormikProvider value={formik}>
+      <CatalogProvisionWizardForm
+        adapter={adapter}
+        formik={formik}
+        initialCatalogItemId={initialCatalogItemId}
+        orderedSteps={orderedSteps}
+        wizardResetKey={wizardResetKey}
+        provisionError={provisionError}
+        setProvisionError={setProvisionError}
+        validationAlert={validationAlert}
+        setValidationAlert={setValidationAlert}
+        pending={pending}
+        setPending={setPending}
+        showCancelConfirm={showCancelConfirm}
+        setShowCancelConfirm={setShowCancelConfirm}
+        onProvision={onProvision}
+        close={close}
+        onCloseHandlerChange={onCloseHandlerChange}
+        t={t}
+      />
+    </FormikProvider>
   );
 };
 
@@ -386,7 +365,6 @@ interface FormProps {
     BuildComputeInstanceCreateBodyInput
   >;
   formik: FormikProps<ComputeInstanceWizardValues>;
-  breadcrumbParentLabel: string;
   initialCatalogItemId?: string;
   orderedSteps: readonly WizardStepId[];
   wizardResetKey: number;
@@ -400,13 +378,13 @@ interface FormProps {
   setShowCancelConfirm: (visible: boolean) => void;
   onProvision: Props['onProvision'];
   close: (options?: { notifyClosed?: boolean }) => void;
+  onCloseHandlerChange?: Props['onCloseHandlerChange'];
   t: ReturnType<typeof useTranslation>['t'];
 }
 
 const CatalogProvisionWizardForm = ({
   adapter,
   formik,
-  breadcrumbParentLabel,
   initialCatalogItemId,
   orderedSteps,
   wizardResetKey,
@@ -420,6 +398,7 @@ const CatalogProvisionWizardForm = ({
   setShowCancelConfirm,
   onProvision,
   close,
+  onCloseHandlerChange,
   t,
 }: FormProps) => {
   const { data: catalogItems = [] } = adapter.useCatalogItems();
@@ -437,6 +416,10 @@ const CatalogProvisionWizardForm = ({
     }
     close();
   }, [close, formik.values, pending, setShowCancelConfirm]);
+
+  useEffect(() => {
+    onCloseHandlerChange?.({ requestClose, pending });
+  }, [onCloseHandlerChange, pending, requestClose]);
 
   const handleStepChange = useCallback(() => {
     setProvisionError(undefined);
@@ -495,65 +478,60 @@ const CatalogProvisionWizardForm = ({
           </ModalFooter>
         </Modal>
       ) : null}
-      <section role="region" aria-label={t(adapter.ariaLabelKey)} data-ouia-component-id="catalog-provision-wizard">
+      <PageSection
+        hasBodyWrapper={false}
+        type={PageSectionTypes.wizard}
+        aria-label={t(adapter.ariaLabelKey)}
+      >
         <Wizard
           key={wizardResetKey}
           navAriaLabel={t('catalogProvision.wizard.navAria', {
             title: t(adapter.wizardTitleKey),
           })}
           isVisitRequired
-          height="100%"
           onStepChange={handleStepChange}
-          header={
-            <CatalogProvisionWizardHeader
-              breadcrumbParentLabel={breadcrumbParentLabel}
-              wizardTitle={t(adapter.wizardTitleKey)}
-              onRequestClose={requestClose}
-              pending={pending}
-            />
-          }
           footer={
-            <WizardFooterWrapper>
-              <CatalogProvisionWizardFooter
-                adapter={adapter}
-                formik={formik}
-                catalogItem={selectedCatalogItem}
-                orderedSteps={orderedSteps}
-                setProvisionError={setProvisionError}
-                setValidationAlert={setValidationAlert}
-                pending={pending}
-                setPending={setPending}
-                onProvision={onProvision}
-                close={close}
-                requestClose={requestClose}
-              />
-            </WizardFooterWrapper>
-          }
-        >
-          {orderedSteps.map((stepId) => (
-            <WizardStep key={stepId} id={stepId} name={t(STEP_LABEL_KEYS[stepId])}>
-              <WizardStepBody
-                adapter={adapter}
-                stepId={stepId}
-                catalogItem={selectedCatalogItem}
-                values={formik.values}
-                provisionError={provisionError}
-                validationAlert={validationAlert}
-              />
-            </WizardStep>
-          ))}
+          <WizardFooterWrapper>
+            <CatalogProvisionWizardFooter
+              adapter={adapter}
+              formik={formik}
+              catalogItem={selectedCatalogItem}
+              orderedSteps={orderedSteps}
+              setProvisionError={setProvisionError}
+              setValidationAlert={setValidationAlert}
+              pending={pending}
+              setPending={setPending}
+              onProvision={onProvision}
+              close={close}
+              requestClose={requestClose}
+            />
+          </WizardFooterWrapper>
+        }
+      >
+        {orderedSteps.map((stepId) => (
+          <WizardStep key={stepId} id={stepId} name={t(STEP_LABEL_KEYS[stepId])}>
+            <WizardStepBody
+              adapter={adapter}
+              stepId={stepId}
+              catalogItem={selectedCatalogItem}
+              values={formik.values}
+              provisionError={provisionError}
+              validationAlert={validationAlert}
+            />
+          </WizardStep>
+        ))}
         </Wizard>
-      </section>
+      </PageSection>
     </>
   );
 };
 
 export const CatalogProvisionWizard = ({
   kind: _kind = 'compute_instance',
-  breadcrumbParentLabel,
   initialCatalogItemId,
   onProvision,
   onClosed,
+  onCloseHandlerChange,
 }: Props) => {
   const adapter = useComputeInstanceAdapter();
   const initialValues = useMemo(() => {
@@ -567,11 +545,11 @@ export const CatalogProvisionWizard = ({
   return (
     <CatalogProvisionWizardInner
       adapter={adapter}
-      breadcrumbParentLabel={breadcrumbParentLabel}
       initialCatalogItemId={initialCatalogItemId}
       initialValues={initialValues}
       onProvision={onProvision}
       onClosed={onClosed}
+      onCloseHandlerChange={onCloseHandlerChange}
     />
   );
 };

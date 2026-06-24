@@ -13,7 +13,6 @@ import type { ApiFetch } from '../../../api/types';
 
 export type RenderWizardOptions = {
   initialCatalogItemId?: string;
-  breadcrumbParentLabel?: string;
   apiFixtures?: WizardApiFixtures;
   fetch?: ApiFetch;
   onProvision?: (payload: BuildComputeInstanceCreateBodyInput) => void | Promise<void>;
@@ -27,7 +26,6 @@ export const renderWizard = async (options: RenderWizardOptions = {}) => {
 
   const view = render(
     <CatalogProvisionWizard
-      breadcrumbParentLabel={options.breadcrumbParentLabel ?? 'Virtual machines'}
       initialCatalogItemId={options.initialCatalogItemId}
       onProvision={onProvision}
       onClosed={onClosed}

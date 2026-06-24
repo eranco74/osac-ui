@@ -46,7 +46,6 @@ export interface CatalogProvisionAdapter<
   ) => void | Promise<void>;
   wizardTitleKey: string;
   wizardDescriptionKey: string;
-  createButtonLabelKey: string;
   breadcrumbCreateLabelKey: string;
   ariaLabelKey: string;
 }

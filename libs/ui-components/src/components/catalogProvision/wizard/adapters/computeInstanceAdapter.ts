@@ -145,7 +145,6 @@ export const useComputeInstanceAdapter = (): CatalogProvisionAdapter<
       },
       wizardTitleKey: 'catalogProvision.vm.wizardTitle',
       wizardDescriptionKey: 'catalogProvision.vm.wizardDescription',
-      createButtonLabelKey: 'catalogProvision.vm.createButton',
       breadcrumbCreateLabelKey: 'catalogProvision.vm.breadcrumbCreate',
       ariaLabelKey: 'catalogProvision.vm.ariaLabel',
     }),

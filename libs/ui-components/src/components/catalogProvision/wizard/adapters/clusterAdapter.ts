@@ -20,7 +20,7 @@ export const clusterAdapter: CatalogProvisionAdapter<
   buildCreatePayload: () => ({}),
   ConfigurationStep: () => null,
   NetworkingStep: () => null,
-  generalFields: [],
+  resolveGeneralFields: () => [],
   getWizardSchema: () => undefined,
   getStepFieldPaths: () => [],
   getReviewSections: () => [],

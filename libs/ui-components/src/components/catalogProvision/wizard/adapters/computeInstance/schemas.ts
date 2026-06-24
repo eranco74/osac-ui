@@ -34,6 +34,11 @@ export const buildComputeInstanceWizardSchema = (
     definitions,
     t('catalogProvision.vm.fields.runStrategy'),
   );
+  const sshKeyOverlay = getCatalogFieldOverlay(
+    'ssh_key',
+    definitions,
+    t('catalogProvision.vm.fields.sshKey'),
+  );
 
   return yup.object({
     catalogItemId: yup.string().required(t('catalogProvision.validation.catalogItemRequired')),
@@ -41,7 +46,12 @@ export const buildComputeInstanceWizardSchema = (
       name: yup.string().trim().required(t('catalogProvision.validation.nameRequired')),
     }),
     spec: yup.object({
-      sshKey: yup.string(),
+      sshKey: mergeCatalogValidation(
+        yup.string(),
+        sshKeyOverlay,
+        false,
+        t('catalogProvision.validation.required'),
+      ),
       image: yup.object({
         sourceRef: mergeCatalogValidation(
           yup.string().trim(),

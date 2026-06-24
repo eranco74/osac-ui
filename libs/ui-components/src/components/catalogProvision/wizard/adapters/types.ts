@@ -17,9 +17,12 @@ export interface CatalogItemsQueryResult<TItem extends CatalogProvisionCatalogIt
 export interface GeneralFieldDescriptor {
   name: string;
   labelKey: string;
+  /** Catalog `display_name` override; falls back to `t(labelKey)`. */
+  label?: string;
   multiline?: boolean;
   isRequired?: boolean;
   isPassword?: boolean;
+  isDisabled?: boolean;
 }
 
 export interface CatalogProvisionAdapter<
@@ -33,7 +36,7 @@ export interface CatalogProvisionAdapter<
   buildCreatePayload: (values: TValues, catalogItem: TItem) => TPayload;
   ConfigurationStep: ComponentType<{ catalogItem: TItem | null }>;
   NetworkingStep: ComponentType<{ catalogItem: TItem | null }>;
-  generalFields: GeneralFieldDescriptor[];
+  resolveGeneralFields: (catalogItem: TItem | null) => GeneralFieldDescriptor[];
   getWizardSchema: (catalogItem: TItem | null) => AnyObjectSchema | undefined;
   getStepFieldPaths: (stepId: WizardStepId) => string[];
   getReviewSections: (values: TValues, catalogItem: TItem) => ReviewSection[];

@@ -28,9 +28,10 @@ export const GeneralStep = ({ fields }: Props) => {
             <InputField
               key={field.name}
               name={field.name}
-              label={t(field.labelKey)}
+              label={field.label ?? t(field.labelKey)}
               fieldId={field.name.replace(/\./g, '-')}
               isRequired={field.isRequired}
+              isDisabled={field.isDisabled}
               multiline={field.multiline}
               type={field.isPassword ? 'password' : 'text'}
             />

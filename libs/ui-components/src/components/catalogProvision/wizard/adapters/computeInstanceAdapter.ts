@@ -4,8 +4,10 @@ import type { TFunction } from 'i18next';
 import type { ComputeInstanceCatalogItem } from '@osac/types';
 
 import { applyVmCatalogConfigurationDefaults } from './computeInstance/applyCatalogDefaults';
+import { applyVmCatalogGeneralDefaults } from './computeInstance/applyCatalogGeneralDefaults';
 import type { ComputeInstanceWizardValues } from './computeInstance/fields';
 import { WIZARD_STEP_FIELD_PATHS } from './computeInstance/fields';
+import { buildVmGeneralFields } from './computeInstance/generalFields';
 import { buildComputeInstanceCreatePayload, createEmptyComputeInstanceValues } from './computeInstance/payload';
 import { buildComputeInstanceWizardSchema } from './computeInstance/schemas';
 import { VmConfigurationStep } from './computeInstance/VmConfigurationStep';
@@ -50,6 +52,11 @@ const buildReviewSections = (
     definitions,
     t('catalogProvision.vm.fields.runStrategy'),
   );
+  const sshKeyOverlay = getCatalogFieldOverlay(
+    'ssh_key',
+    definitions,
+    t('catalogProvision.vm.fields.sshKey'),
+  );
 
   return [
     {
@@ -57,7 +64,7 @@ const buildReviewSections = (
       rows: [
         reviewRow(t('catalogProvision.vm.fields.name'), formatReviewScalar(values.metadata.name)),
         reviewRow(
-          t('catalogProvision.vm.fields.sshKey'),
+          sshKeyOverlay.label,
           formatReviewScalar(values.spec.sshKey, true),
         ),
       ],
@@ -97,19 +104,6 @@ const buildReviewSections = (
   ];
 };
 
-const VM_GENERAL_FIELDS = [
-  {
-    name: 'metadata.name',
-    labelKey: 'catalogProvision.vm.fields.name',
-    isRequired: true,
-  },
-  {
-    name: 'spec.sshKey',
-    labelKey: 'catalogProvision.vm.fields.sshKey',
-    multiline: true,
-  },
-] as const;
-
 export const useComputeInstanceAdapter = (): CatalogProvisionAdapter<
   ComputeInstanceCatalogItem,
   ComputeInstanceWizardValues,
@@ -135,7 +129,7 @@ export const useComputeInstanceAdapter = (): CatalogProvisionAdapter<
       buildCreatePayload: buildComputeInstanceCreatePayload,
       ConfigurationStep: VmConfigurationStep,
       NetworkingStep: VmNetworkingStep,
-      generalFields: [...VM_GENERAL_FIELDS],
+      resolveGeneralFields: (catalogItem) => buildVmGeneralFields(catalogItem, t),
       getWizardSchema: (catalogItem) => buildComputeInstanceWizardSchema(catalogItem, t),
       getStepFieldPaths: (stepId) => WIZARD_STEP_FIELD_PATHS[stepId] ?? [],
       getReviewSections: (values, catalogItem) => buildReviewSections(values, catalogItem, t),
@@ -147,6 +141,7 @@ export const useComputeInstanceAdapter = (): CatalogProvisionAdapter<
           },
         });
         applyVmCatalogConfigurationDefaults(item, helpers, t);
+        applyVmCatalogGeneralDefaults(item, helpers, t);
       },
       wizardTitleKey: 'catalogProvision.vm.wizardTitle',
       wizardDescriptionKey: 'catalogProvision.vm.wizardDescription',

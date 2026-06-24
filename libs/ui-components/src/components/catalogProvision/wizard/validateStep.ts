@@ -67,19 +67,15 @@ export const validationErrorToFormikErrors = (
   return errors;
 };
 
-export const validateWizardStepFields = async (
-  schema: AnyObjectSchema | undefined,
+const collectStepFieldErrors = (
+  schema: AnyObjectSchema,
   values: Record<string, unknown>,
   fieldPaths: string[],
-): Promise<FormikErrors<Record<string, unknown>>> => {
-  if (!schema || fieldPaths.length === 0) {
-    return {};
-  }
-
+): FormikErrors<Record<string, unknown>> => {
   const innerErrors: ValidationError[] = [];
   for (const path of fieldPaths) {
     try {
-      await schema.validateAt(path, values);
+      schema.validateSyncAt(path, values);
     } catch (error) {
       if (error instanceof ValidationError) {
         innerErrors.push(error);
@@ -94,7 +90,19 @@ export const validateWizardStepFields = async (
   return validationErrorToFormikErrors(new ValidationError(innerErrors));
 };
 
-export const applyStepValidationState = <TValues extends Record<string, unknown>>(
+export const validateWizardStepFields = (
+  schema: AnyObjectSchema | undefined,
+  values: Record<string, unknown>,
+  fieldPaths: string[],
+): FormikErrors<Record<string, unknown>> => {
+  if (!schema || fieldPaths.length === 0) {
+    return {};
+  }
+
+  return collectStepFieldErrors(schema, values, fieldPaths);
+};
+
+export const applyStepValidationState = <TValues>(
   formik: FormikProps<TValues>,
   fieldPaths: string[],
   errors: FormikErrors<TValues>,

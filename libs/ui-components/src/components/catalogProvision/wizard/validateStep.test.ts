@@ -9,7 +9,7 @@ import {
 } from './validateStep';
 
 describe('validateStep', () => {
-  it('maps Yup nested paths to nested Formik errors for step field subset', async () => {
+  it('maps Yup nested paths to nested Formik errors for step field subset', () => {
     const schema = yup.object({
       metadata: yup.object({
         name: yup.string().trim().required('Name is required'),
@@ -19,7 +19,7 @@ describe('validateStep', () => {
       }),
     });
 
-    const errors = await validateWizardStepFields(
+    const errors = validateWizardStepFields(
       schema,
       { metadata: { name: '' }, spec: { sshKey: 'present' } },
       ['metadata.name'],

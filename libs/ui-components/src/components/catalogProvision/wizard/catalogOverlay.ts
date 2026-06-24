@@ -40,12 +40,33 @@ export const catalogPathToFormPath = (wirePath: string): string => {
   return wirePathToFormPath(wirePath);
 };
 
+/** Catalog field_definitions paths are spec-relative and omit the leading `spec.` segment. */
+export const catalogFieldDefinitionWirePaths = (wirePath: string): string[] => {
+  const trimmed = wirePath.trim();
+  if (!trimmed) {
+    return [];
+  }
+  if (trimmed.startsWith('spec.')) {
+    const withoutSpec = trimmed.slice('spec.'.length);
+    return withoutSpec === trimmed ? [trimmed] : [trimmed, withoutSpec];
+  }
+  return [trimmed, `spec.${trimmed}`];
+};
+
+export const findCatalogFieldDefinition = (
+  wirePath: string,
+  definitions: CatalogFieldDefinition[],
+): CatalogFieldDefinition | undefined => {
+  const candidates = new Set(catalogFieldDefinitionWirePaths(wirePath));
+  return definitions.find((entry) => candidates.has(entry.path));
+};
+
 export const getCatalogFieldOverlay = (
   wirePath: string,
   definitions: CatalogFieldDefinition[],
   defaultLabel: string,
 ): CatalogFieldOverlay => {
-  const def = definitions.find((entry) => entry.path === wirePath);
+  const def = findCatalogFieldDefinition(wirePath, definitions);
   if (!def) {
     return { path: wirePath, label: defaultLabel, editable: true };
   }
@@ -118,9 +139,6 @@ export const overlayDefaultToFormValue = (overlay: CatalogFieldOverlay): unknown
     return undefined;
   }
   if (typeof overlay.defaultValue === 'boolean') {
-    return overlay.defaultValue;
-  }
-  if (typeof overlay.defaultValue === 'number') {
     return overlay.defaultValue;
   }
   return fieldDefinitionDefaultToInputString(overlay.defaultValue);

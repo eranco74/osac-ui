@@ -30,7 +30,7 @@ export const VmCreatePage = () => {
   );
 
   return (
-    <PageSection isFilled className="osac-page">
+    <PageSection isFilled>
       <CatalogProvisionWizard
         initialCatalogItemId={catalogItemId}
         breadcrumbParentLabel="Virtual machines"

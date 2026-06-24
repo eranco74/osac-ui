@@ -21,7 +21,10 @@ export const VmCreatePage = () => {
         vm,
         specCatalogItemOnly: true,
       });
-      navigate(created.id ? `/vms/${created.id}` : '/vms');
+      if (!created.id) {
+        throw new Error('Create response missing id');
+      }
+      navigate(`/vms/${created.id}`);
     },
     [navigate, provisionVm],
   );

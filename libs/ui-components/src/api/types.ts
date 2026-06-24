@@ -14,7 +14,10 @@ export type ApiRoute =
   | 'v1/clusters'
   | 'v1/organizations'
   | 'v1/users'
-  | 'v1/capabilities';
+  | 'v1/capabilities'
+  | 'v1/virtual_networks'
+  | 'v1/subnets'
+  | 'v1/security_groups';
 
 /**
  * Strict 3-part tuple that encodes an API address.
